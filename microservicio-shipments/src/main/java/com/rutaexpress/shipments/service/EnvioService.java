@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.rutaexpress.messaging.CommandTopology;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,6 +51,9 @@ public class EnvioService {
                 RabbitMQConfig.ROUTING_KEY, 
                 guardado
             );
+            for (String key : List.of(CommandTopology.EMAIL, CommandTopology.WAREHOUSE, CommandTopology.LABEL)) {
+                rabbitTemplate.convertAndSend(CommandTopology.DIRECT, key, guardado);
+            }
             System.out.println("--> [RabbitMQ] Evento de envío publicado exitosamente: " + guardado.getCodigoSeguimiento());
         } catch (Exception e) {
             System.err.println("--> [RabbitMQ] Error al publicar evento en RabbitMQ: " + e.getMessage());

@@ -15,6 +15,11 @@ public class RabbitAdminController {
         this.adminService = adminService;
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> invalid(IllegalArgumentException error) {
+        return ResponseEntity.badRequest().body(error.getMessage());
+    }
+
     // --- CREAR COLA ---
     @PostMapping("/queues")
     public ResponseEntity<String> createQueue(@RequestParam(required = false) String queueName) {
@@ -64,10 +69,9 @@ public class RabbitAdminController {
                                                 @RequestParam(required = false) String exchangeName,
                                                 @RequestParam(required = false) String routingKey) {
         if (queueName == null || queueName.isBlank() ||
-            exchangeName == null || exchangeName.isBlank() ||
-            routingKey == null || routingKey.isBlank()) {
+            exchangeName == null || exchangeName.isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Los parámetros 'queueName', 'exchangeName' y 'routingKey' son todos obligatorios");
+                    .body("Se requieren queueName y exchangeName");
         }
         adminService.createBinding(queueName, exchangeName, routingKey);
         return ResponseEntity.status(HttpStatus.CREATED).body("Binding creado correctamente");
@@ -79,10 +83,9 @@ public class RabbitAdminController {
                                                 @RequestParam(required = false) String exchangeName,
                                                 @RequestParam(required = false) String routingKey) {
         if (queueName == null || queueName.isBlank() ||
-            exchangeName == null || exchangeName.isBlank() ||
-            routingKey == null || routingKey.isBlank()) {
+            exchangeName == null || exchangeName.isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Los parámetros 'queueName', 'exchangeName' y 'routingKey' son todos obligatorios");
+                    .body("Se requieren queueName y exchangeName");
         }
         adminService.deleteBinding(queueName, exchangeName, routingKey);
         return ResponseEntity.ok("Binding eliminado correctamente");
