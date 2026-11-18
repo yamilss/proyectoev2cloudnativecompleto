@@ -259,7 +259,7 @@ export class DashboardComponent implements OnInit {
       });
 
       this.apiService.obtenerShipments(email).subscribe({
-        next: (res) => { this.misEnvios.set(res); this.cargando.set(false); },
+        next: (res) => { this.misEnvios.set(res.filter(envio => email.length > 0 && envio.clienteEmail?.toLowerCase() === email.toLowerCase())); this.cargando.set(false); },
         error: () => this.cargando.set(false)
       });
     } else {
