@@ -15,6 +15,6 @@ public class KafkaAdminApplication {
 
     @Bean(destroyMethod = "close")
     Admin admin(@Value("${spring.kafka.bootstrap-servers}") String brokers) {
-        return Admin.create(Map.of("bootstrap.servers", brokers, "default.api.timeout.ms", "10000"));
+        return Admin.create(Map.of("bootstrap.servers", brokers));
     }
 }
