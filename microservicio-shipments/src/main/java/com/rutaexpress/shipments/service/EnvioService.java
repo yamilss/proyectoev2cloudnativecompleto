@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.rutaexpress.messaging.CommandTopology;
+import com.rutaexpress.shipments.kafka.EventPublisher;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,10 +21,13 @@ public class EnvioService {
     private final RestTemplate restTemplate;
     private final RabbitTemplate rabbitTemplate;
 
+    private final EventPublisher kafka;
+
     @Value("${catalog.service.url}")
     private String catalogUrl;
 
-    public EnvioService(EnvioRepository repository, RestTemplate restTemplate, RabbitTemplate rabbitTemplate) {
+    public EnvioService(EnvioRepository repository, RestTemplate restTemplate, RabbitTemplate rabbitTemplate, EventPublisher kafka) {
+        this.kafka = kafka;
         this.repository = repository;
         this.restTemplate = restTemplate;
         this.rabbitTemplate = rabbitTemplate;
@@ -59,6 +63,7 @@ public class EnvioService {
             System.err.println("--> [RabbitMQ] Error al publicar evento en RabbitMQ: " + e.getMessage());
         }
 
+        kafka.publish(guardado, null);
         return guardado;
     }
 
@@ -81,8 +86,11 @@ public class EnvioService {
             }
         }
 
+        EstadoEnvio anterior = envio.getEstado();
         envio.setEstado(nuevoEstado);
-        return repository.save(envio);
+        Envio guardado = repository.save(envio);
+        if (anterior != nuevoEstado) kafka.publish(guardado, anterior);
+        return guardado;
     }
 
     public void eliminar(Long id) {
